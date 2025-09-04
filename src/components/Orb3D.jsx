@@ -1,67 +1,306 @@
-// src/components/Orb3D.jsx  (replace previous file)
+// // src/components/Orb3D.jsx  (replace previous file)
+// import React, { useEffect, useRef } from "react";
+// import * as THREE from "three";
+// import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+// import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+// import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+// import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+
+// export default function Orb3D() {
+//   const mountRef = useRef(null);
+//   const rafRef = useRef(0);
+
+//   useEffect(() => {
+//     const mount = mountRef.current;
+
+//     // Scene / Camera / Renderer
+//     const scene = new THREE.Scene();
+//     scene.fog = new THREE.Fog(0x000000, 10, 28);
+
+//     const camera = new THREE.PerspectiveCamera(
+//       40,
+//       mount.clientWidth / mount.clientHeight,
+//       0.1,
+//       100
+//     );
+//     camera.position.set(0, 0.6, 9);
+
+//     const renderer = new THREE.WebGLRenderer({
+//       alpha: true,
+//       antialias: true,
+//       powerPreference: "high-performance",
+//     });
+//     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+//     renderer.setSize(mount.clientWidth, mount.clientHeight);
+//     renderer.domElement.style.position = "absolute";
+//     renderer.domElement.style.inset = "0";
+//     renderer.domElement.style.pointerEvents = "none";
+//     mount.appendChild(renderer.domElement);
+
+//     // Bloom composer setup
+//     const composer = new EffectComposer(renderer);
+//     composer.addPass(new RenderPass(scene, camera));
+//     const bloomPass = new UnrealBloomPass(
+//       new THREE.Vector2(mount.clientWidth, mount.clientHeight),
+//       0.1, // strength
+//       0.6, // radius
+//       0.1 // threshold
+//     );
+//     composer.addPass(bloomPass);
+
+//     // Lights (tuned for glossy/glass + metallic)
+//     const hemi = new THREE.HemisphereLight(0xb8b8ff, 0x151219, 0.6);
+//     scene.add(hemi);
+
+//     const key = new THREE.DirectionalLight(0xffffff, 1.6);
+//     key.position.set(3, 6, 6);
+//     key.castShadow = false;
+//     scene.add(key);
+
+//     const rim = new THREE.PointLight(0x9f7fff, 1.2, 40);
+//     rim.position.set(-5, -2, 4);
+//     scene.add(rim);
+
+//     // Holder for model
+//     const rig = new THREE.Group();
+//     scene.add(rig);
+
+//     // Optional: subtle floor fade (no geometry border)
+//     const floor = new THREE.Mesh(
+//       new THREE.CircleGeometry(16, 64),
+//       new THREE.MeshBasicMaterial({
+//         color: 0x30204a,
+//         transparent: true,
+//         opacity: 0.16,
+//       })
+//     );
+//     floor.rotation.x = -Math.PI / 2;
+//     floor.position.y = -2.3;
+//     rig.add(floor);
+
+//     // Load GLB
+//     const loader = new GLTFLoader();
+//     let mixer = null;
+
+//     loader.load(
+//       "/models/metalicOrb8.glb",
+//       (gltf) => {
+//         const model = gltf.scene || gltf.scenes[0];
+//         model.traverse((o) => {
+//           if (o.isMesh) {
+//             o.castShadow = false;
+//             o.receiveShadow = false;
+//             // Make PBR a bit shinier by default (unless you already have materials set)
+//             if (o.material && "metalness" in o.material) {
+//               o.material.metalness = Math.min(1, (o.material.metalness ?? 0.6) + 0.2);
+//               o.material.roughness = Math.max(0, (o.material.roughness ?? 0.4) - 0.15);
+//               o.material.envMapIntensity = 1.2;
+//             }
+//           }
+//         });
+
+//         // Auto center + scale to fit nicely in camera
+//         const box = new THREE.Box3().setFromObject(model);
+//         const size = new THREE.Vector3();
+//         box.getSize(size);
+//         const center = new THREE.Vector3();
+//         box.getCenter(center);
+//         model.position.sub(center); // center at origin
+
+//         // Scale so largest dimension ~ 4.5 units
+//         const maxDim = Math.max(size.x, size.y, size.z);
+//         const scale = 4.5 / (maxDim || 1);
+//         model.scale.setScalar(scale);
+
+//         // Slight vertical offset so it sits visually centered
+//   // Move model a bit higher
+//   model.position.y += 1.5;
+
+//         rig.add(model);
+
+//         // Play all animations in a loop, matching Blender's behavior
+//         if (gltf.animations && gltf.animations.length) {
+//           mixer = new THREE.AnimationMixer(model);
+//           gltf.animations.forEach((clip) => {
+//             const action = mixer.clipAction(clip);
+//             action.reset();
+//             action.setLoop(THREE.LoopRepeat, Infinity);
+//             action.play();
+//           });
+//         }
+//       },
+//       undefined,
+//       (err) => {
+//         console.error("GLB load error:", err);
+//       }
+//     );
+
+//     // Interactions: mouse rotation + scroll parallax
+//     let targetX = 0, targetY = 0;
+
+//     const onMouse = (e) => {
+//       const x = (e.clientX / window.innerWidth) * 2 - 1;
+//       const y = (e.clientY / window.innerHeight) * 2 - 1;
+//       targetX = x * 0.5;
+//       targetY = y * 0.3;
+//     };
+//     window.addEventListener("mousemove", onMouse);
+
+//     const onScroll = () => {
+//       const t = window.scrollY || document.documentElement.scrollTop;
+//       rig.position.y = -t * 0.0008; // subtle parallax
+//     };
+//     window.addEventListener("scroll", onScroll);
+
+//     // Resize
+//     const onResize = () => {
+//       const w = mount.clientWidth;
+//       const h = mount.clientHeight;
+//       renderer.setSize(w, h);
+//       camera.aspect = w / h;
+//       camera.updateProjectionMatrix();
+//     };
+//     const ro = new ResizeObserver(onResize);
+//     ro.observe(mount);
+
+//     // Loop
+//     const clock = new THREE.Clock();
+//     const tick = () => {
+//   // Slow down animation by reducing delta time
+//   const dt = clock.getDelta() * 0.5; // 0.5 = half speed, adjust as needed
+
+//   // Smoothly follow mouse
+//   rig.rotation.y += (targetX - rig.rotation.y) * 0.06;
+//   rig.rotation.x += (targetY - rig.rotation.x) * 0.06;
+
+//   if (mixer) mixer.update(dt);
+//   composer.render();
+//   rafRef.current = requestAnimationFrame(tick);
+//     };
+//     tick();
+
+//     // Cleanup
+//     return () => {
+//       cancelAnimationFrame(rafRef.current);
+//       window.removeEventListener("mousemove", onMouse);
+//       window.removeEventListener("scroll", onScroll);
+//       ro.disconnect();
+//       renderer.dispose();
+//       mount.removeChild(renderer.domElement);
+//     };
+//   }, []);
+
+//   return <div className="orb3d-mount" ref={mountRef} aria-hidden="true" />;
+// }
+
+
+
+
+
+
+
+
+
+
+
+// src/components/Orb3D.jsx
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-export default function Orb3D() {
+/**
+ * Props:
+ *  - modelUrl: string (default "/models/metalicOrb8.glb")
+ *  - fit: number 0..1, fraction of viewport's smaller dimension to fill (default 0.9)
+ *  - sizeMultiplier: number, applied after auto-fit (default 1.25)
+ *  - yOffset: number, final vertical offset (default 0.1)
+ */
+export default function Orb3D({
+  modelUrl = "/models/metalicOrb8.glb",
+  fit = 0.9,
+  sizeMultiplier = 1.25,
+  yOffset = 0.1,
+}) {
   const mountRef = useRef(null);
   const rafRef = useRef(0);
 
   useEffect(() => {
     const mount = mountRef.current;
 
-    // Scene / Camera / Renderer
+    // Scene
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x000000, 10, 28);
+    scene.fog = new THREE.Fog(0x000000, 20, 60);
 
+    // Camera
     const camera = new THREE.PerspectiveCamera(
-      40,
+      45,
       mount.clientWidth / mount.clientHeight,
       0.1,
-      100
+      200
     );
-    camera.position.set(0, 0.6, 9);
+    camera.position.set(0, 0.4, 8.5);
 
+    // Renderer
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: true,
       powerPreference: "high-performance",
     });
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.physicallyCorrectLights = true;
+
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
-    renderer.domElement.style.position = "absolute";
-    renderer.domElement.style.inset = "0";
-    renderer.domElement.style.pointerEvents = "none";
+    Object.assign(renderer.domElement.style, {
+      position: "absolute",
+      inset: "0",
+      pointerEvents: "none",
+    });
     mount.appendChild(renderer.domElement);
 
-    // Lights (tuned for glossy/glass + metallic)
-    const hemi = new THREE.HemisphereLight(0xb8b8ff, 0x151219, 0.6);
-    scene.add(hemi);
+    // PMREM env for PBR reflections
+    const pmremGen = new THREE.PMREMGenerator(renderer);
+    const env = pmremGen.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = env;
+    scene.background = null;
 
-    const key = new THREE.DirectionalLight(0xffffff, 1.6);
-    key.position.set(3, 6, 6);
-    key.castShadow = false;
+    // Post FX
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(mount.clientWidth, mount.clientHeight),
+      0.08,
+      0.6,
+      0.85
+    );
+    composer.addPass(bloomPass);
+
+    // Lights
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x111122, 0.35));
+    const key = new THREE.DirectionalLight(0xffffff, 1.3);
+    key.position.set(4, 6, 8);
     scene.add(key);
-
-    const rim = new THREE.PointLight(0x9f7fff, 1.2, 40);
+    const rim = new THREE.PointLight(0x8f7fff, 0.6, 40);
     rim.position.set(-5, -2, 4);
     scene.add(rim);
 
-    // Holder for model
+    // Rig
     const rig = new THREE.Group();
     scene.add(rig);
 
-    // Optional: subtle floor fade (no geometry border)
+    // Soft ground
     const floor = new THREE.Mesh(
       new THREE.CircleGeometry(16, 64),
-      new THREE.MeshBasicMaterial({
-        color: 0x30204a,
-        transparent: true,
-        opacity: 0.16,
-      })
+      new THREE.MeshBasicMaterial({ color: 0x2a2040, transparent: true, opacity: 0.12 })
     );
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -2.3;
+    floor.position.y = -2.0;
     rig.add(floor);
 
     // Load GLB
@@ -69,70 +308,76 @@ export default function Orb3D() {
     let mixer = null;
 
     loader.load(
-      "/models/metalicOrb.glb",
+      modelUrl,
       (gltf) => {
         const model = gltf.scene || gltf.scenes[0];
+
+        // Materials / color spaces
         model.traverse((o) => {
-          if (o.isMesh) {
-            o.castShadow = false;
-            o.receiveShadow = false;
-            // Make PBR a bit shinier by default (unless you already have materials set)
-            if (o.material && "metalness" in o.material) {
-              o.material.metalness = Math.min(1, (o.material.metalness ?? 0.6) + 0.2);
-              o.material.roughness = Math.max(0, (o.material.roughness ?? 0.4) - 0.15);
-              o.material.envMapIntensity = 1.2;
-            }
+          if (o.isMesh && o.material) {
+            const m = o.material;
+            if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+            if (m.emissiveMap) m.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+            if (m.roughnessMap) m.roughnessMap.colorSpace = THREE.LinearSRGBColorSpace;
+            if (m.metalnessMap) m.metalnessMap.colorSpace = THREE.LinearSRGBColorSpace;
+            if ("envMapIntensity" in m) m.envMapIntensity = 1.0;
+            if ("metalness" in m) m.metalness = Math.min(1, m.metalness ?? 0.8);
+            if ("roughness" in m) m.roughness = Math.max(0, m.roughness ?? 0.3);
           }
         });
 
-        // Auto center + scale to fit nicely in camera
-        const box = new THREE.Box3().setFromObject(model);
+        // Center & auto-fit
+        const root = model.clone(true);
+        rig.add(root);
+
+        const box = new THREE.Box3().setFromObject(root);
         const size = new THREE.Vector3();
-        box.getSize(size);
         const center = new THREE.Vector3();
+        box.getSize(size);
         box.getCenter(center);
-        model.position.sub(center); // center at origin
 
-        // Scale so largest dimension ~ 4.5 units
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 4.5 / (maxDim || 1);
-        model.scale.setScalar(scale);
+        root.position.sub(center);
 
-        // Slight vertical offset so it sits visually centered
-        model.position.y -= 0.2;
+        // Viewport at z≈0
+        const dist = Math.abs(camera.position.z);
+        const vFov = (camera.fov * Math.PI) / 180;
+        const viewH = 2 * Math.tan(vFov / 2) * dist;
+        const viewW = viewH * camera.aspect;
 
-        rig.add(model);
+        const target = Math.max(0.1, Math.min(1, fit)) * Math.min(viewW, viewH);
+        const maxDim = Math.max(size.x, size.y);
+        const baseScale = maxDim > 0 ? target / maxDim : 1;
 
-        // Play first animation if present
+        root.scale.setScalar(baseScale * sizeMultiplier);
+        root.position.y += yOffset;
+
+        // Animations
         if (gltf.animations && gltf.animations.length) {
-          mixer = new THREE.AnimationMixer(model);
-          const clip = gltf.animations[0];
-          const action = mixer.clipAction(clip);
-          action.play();
+          mixer = new THREE.AnimationMixer(root);
+          gltf.animations.forEach((clip) => {
+            mixer.clipAction(clip).reset().setLoop(THREE.LoopRepeat, Infinity).play();
+          });
         }
       },
       undefined,
-      (err) => {
-        console.error("GLB load error:", err);
-      }
+      (err) => console.error("GLB load error:", err)
     );
 
-    // Interactions: mouse rotation + scroll parallax
+    // Mouse + scroll
     let targetX = 0, targetY = 0;
-
     const onMouse = (e) => {
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = (e.clientY / window.innerHeight) * 2 - 1;
       targetX = x * 0.5;
       targetY = y * 0.3;
     };
-    window.addEventListener("mousemove", onMouse);
+    window.addEventListener("mousemove", onMouse, { passive: true });
 
     const onScroll = () => {
       const t = window.scrollY || document.documentElement.scrollTop;
-      rig.position.y = -t * 0.0008; // subtle parallax
+      rig.position.y = -t * 0.0008;
     };
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     // Resize
     const onResize = () => {
@@ -141,6 +386,8 @@ export default function Orb3D() {
       renderer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      composer.setSize(w, h);
+      bloomPass.setSize(w, h);
     };
     const ro = new ResizeObserver(onResize);
     ro.observe(mount);
@@ -149,13 +396,10 @@ export default function Orb3D() {
     const clock = new THREE.Clock();
     const tick = () => {
       const dt = clock.getDelta();
-
-      // Smoothly follow mouse
       rig.rotation.y += (targetX - rig.rotation.y) * 0.06;
       rig.rotation.x += (targetY - rig.rotation.x) * 0.06;
-
-      if (mixer) mixer.update(dt);
-      renderer.render(scene, camera);
+      if (mixer) mixer.update(dt * 0.7);
+      composer.render();
       rafRef.current = requestAnimationFrame(tick);
     };
     tick();
@@ -166,10 +410,15 @@ export default function Orb3D() {
       window.removeEventListener("mousemove", onMouse);
       window.removeEventListener("scroll", onScroll);
       ro.disconnect();
+      composer.dispose();
+      pmremGen.dispose();
       renderer.dispose();
-      mount.removeChild(renderer.domElement);
+      env.dispose?.();
+      if (renderer.domElement.parentNode === mount) {
+        mount.removeChild(renderer.domElement);
+      }
     };
-  }, []);
+  }, [modelUrl, fit, sizeMultiplier, yOffset]);
 
   return <div className="orb3d-mount" ref={mountRef} aria-hidden="true" />;
 }
