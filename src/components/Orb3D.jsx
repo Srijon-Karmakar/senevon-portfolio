@@ -222,7 +222,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 export default function Orb3D({
   modelUrl = "/models/metalicOrb9.glb",
   fit = 0.9,
-  sizeMultiplier = 1,
+  sizeMultiplier = 1, //default 1
   yOffset = 0.5,
 }) {
   const mountRef = useRef(null);

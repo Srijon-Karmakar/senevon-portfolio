@@ -1,0 +1,11 @@
+.contact-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.contact-3d {
+  width: 400px;
+  height: 400px;
+  position: relative;
+}

@@ -6,6 +6,29 @@ import Contact from "./components/Contacts";
 import Footer from "./components/Footer";
 import "./styles/index.css";
 import MouseSpotlight from "./components/MouseSpotlight";
+// for tools section 
+import LogoLoop from './components/tools';
+import { SiReact, SiNextdotjs, SiTypescript, SiTailwindcss } from 'react-icons/si';
+
+// magic liquid 
+import MagicLiquid from './components/magicLiquid';
+
+
+
+// tools section 
+const techLogos = [
+  { node: <SiReact />, title: "React", href: "https://react.dev" },
+  { node: <SiNextdotjs />, title: "Next.js", href: "https://nextjs.org" },
+  { node: <SiTypescript />, title: "TypeScript", href: "https://www.typescriptlang.org" },
+  { node: <SiTailwindcss />, title: "Tailwind CSS", href: "https://tailwindcss.com" },
+];
+
+// Alternative with image sources
+const imageLogos = [
+  { src: "/logos/company1.png", alt: "Company 1", href: "https://company1.com" },
+  { src: "/logos/company2.png", alt: "Company 2", href: "https://company2.com" },
+  { src: "/logos/company3.png", alt: "Company 3", href: "https://company3.com" },
+];
 
 export default function App() {
   useEffect(() => {
@@ -37,11 +60,14 @@ export default function App() {
 
   return (
     <div className="site wrap-gradient">
+      <MagicLiquid/>
       <MouseSpotlight radius={320} intensity={0.9} softness={0.65} />
+
+      
       <header className="nav">
         <div className="brand">
           {/* <span className="brand-mark">S</span>enevon */}
-          <img src="/images/Logo/logo.png" alt="logo" />
+          <img src="/Images/Logo/neon-logo.png" alt="logo" className="logo-img" />
         </div>
         <nav className="nav-links">
           <a href="#home">Home</a>
@@ -56,6 +82,24 @@ export default function App() {
         <Hero />
         <Services />
         <Projects />
+
+        {/* tools section  */}
+        <div style={{ height: '200px', position: 'relative', overflow: 'hidden'}}>
+      <LogoLoop
+        logos={techLogos}
+        speed={120}
+        direction="left"
+        logoHeight={48}
+        gap={40}
+        pauseOnHover
+        scaleOnHover
+        fadeOut
+        fadeOutColor="#ffffff"
+        ariaLabel="Technology partners"
+      />
+    </div>
+        {/* tools section  */}
+
         <Contact />
       </main>
 
