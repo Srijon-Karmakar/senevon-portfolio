@@ -48,13 +48,13 @@ export default function Hero() {
         <div className="hero-model-slot" aria-hidden="true" />
 
         <div className="about-blade glass tilt">
-          <h3>About Our Team</h3>
+          <h3>🚀 About Senevon</h3>
           <p>
-            <strong>lorem 400</strong> ngulsh which areas on a page will hold
-            advertisements, editorials, and filler before the final written
-            content and website designs receive client approval. Fun Lorem Ipsum
-            text may appear in any size and font to simulate everything you
-            create for your campaigns.
+            <strong> SENEVON </strong> 
+ is a startup with a simple goal: build smart, beautiful, and scalable digital solutions that actually make a difference.
+We're a team of designers, developers, and creative thinkers who love turning ideas into clean code, smooth user experiences, and impactful digital products. Whether you're a business looking to launch, grow, or innovate — we’re here to make it happen.
+From apps to SaaS platforms, from websites to tools — we build things that work, look good, and grow with you.
+
           </p>
           <div className="about-cards">
             {["About Our Team", "About Our Team", "About Our Team"].map(
