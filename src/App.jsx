@@ -40,7 +40,8 @@ export default function App() {
       <MouseSpotlight radius={320} intensity={0.9} softness={0.65} />
       <header className="nav">
         <div className="brand">
-          <span className="brand-mark">S</span>enevon
+          {/* <span className="brand-mark">S</span>enevon */}
+          <img src="/images/Logo/logo.png" alt="logo" />
         </div>
         <nav className="nav-links">
           <a href="#home">Home</a>

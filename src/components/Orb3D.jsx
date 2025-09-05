@@ -220,10 +220,10 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
  *  - yOffset: number, final vertical offset (default 0.1)
  */
 export default function Orb3D({
-  modelUrl = "/models/metalicOrb8.glb",
+  modelUrl = "/models/metalicOrb9.glb",
   fit = 0.9,
-  sizeMultiplier = 1.25,
-  yOffset = 0.1,
+  sizeMultiplier = 1,
+  yOffset = 0.5,
 }) {
   const mountRef = useRef(null);
   const rafRef = useRef(0);
