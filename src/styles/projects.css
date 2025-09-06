@@ -1,0 +1,15 @@
+.projects {
+  position: relative;
+}
+
+.project-row {
+  display: flex;
+  gap: 2rem;
+}
+
+.project {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+}

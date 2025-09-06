@@ -47,16 +47,18 @@ export default function Hero() {
 
         <div className="hero-model-slot" aria-hidden="true" />
 
-        <div className="about-blade glass tilt">
-          <h3>🚀 About Senevon</h3>
+        <div id="hero-card" className="about-blade glass tilt">
+          <h3>About Senevon</h3>
           <p>
-            <strong> SENEVON </strong> 
- is a startup with a simple goal: build smart, beautiful, and scalable digital solutions that actually make a difference.
-We're a team of designers, developers, and creative thinkers who love turning ideas into clean code, smooth user experiences, and impactful digital products. Whether you're a business looking to launch, grow, or innovate — we’re here to make it happen.
-From apps to SaaS platforms, from websites to tools — we build things that work, look good, and grow with you.
+            <strong> SENEVON </strong>
+            is a Organisation with a simple goal: build smart, beautiful, and scalable digital solutions that actually make a difference.
+            We're a team of designers, developers, and creative thinkers who love turning ideas into clean code, smooth user experiences, and impactful digital products. Whether you're a business looking to launch, grow, or innovate — we’re here to make it happen.
+            From apps to SaaS platforms, from websites to tools — we build things that work, look good, and grow with you.
 
           </p>
-          <div className="about-cards">
+
+
+          {/* <div className="about-cards">
             {["About Our Team", "About Our Team", "About Our Team"].map(
               (t, i) => (
                 <div className="mini glass" key={i}>
@@ -68,7 +70,33 @@ From apps to SaaS platforms, from websites to tools — we build things that wor
                 </div>
               )
             )}
+          </div> */}
+
+
+          <div className="about-cards">
+            {[
+              {
+                title: "Web Development",
+                desc: "We build fast, scalable, and secure websites tailored to your business needs. From responsive landing pages to complex web platforms, our development team ensures seamless performance, clean code, and an engaging user experience."
+              },
+              {
+                title: "Designing",
+                desc: "Great design is more than looks—it’s about experience. Our creative team crafts modern, user-friendly interfaces and visually stunning designs that reflect your brand identity and keep users engaged."
+              },
+              {
+                title: "App Development",
+                desc: "We develop powerful mobile applications that bring your ideas to life. Whether it’s iOS, Android, or cross-platform, our apps are intuitive, feature-rich, and designed to deliver real value to your users."
+              }
+            ].map((card, i) => (
+              <div className="mini glass" key={i}>
+                <h4>{card.title}</h4>
+                <p>{card.desc}</p>
+              </div>
+            ))}
           </div>
+
+
+
           <button className="cta">Work with Us</button>
         </div>
       </div>

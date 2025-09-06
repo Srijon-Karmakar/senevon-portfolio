@@ -60,7 +60,7 @@ export default function App() {
 
   return (
     <div className="site wrap-gradient">
-      <MagicLiquid/>
+      {/* <MagicLiquid/> */}
       <MouseSpotlight radius={320} intensity={0.9} softness={0.65} />
 
       
