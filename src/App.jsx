@@ -9,6 +9,7 @@ import MouseSpotlight from "./components/MouseSpotlight";
 // for tools section 
 import LogoLoop from './components/tools';
 import { SiReact, SiNextdotjs, SiTypescript, SiTailwindcss } from 'react-icons/si';
+import Tools from "./components/tools";
 
 // magic liquid 
 import MagicLiquid from './components/magicLiquid';
@@ -60,7 +61,7 @@ export default function App() {
 
   return (
     <div className="site wrap-gradient">
-      {/* <MagicLiquid/> */}
+      <MagicLiquid/>
       <MouseSpotlight radius={320} intensity={0.9} softness={0.65} />
 
       
@@ -84,7 +85,7 @@ export default function App() {
         <Projects />
 
         {/* tools section  */}
-        <div style={{ height: '200px', position: 'relative', overflow: 'hidden'}}>
+        {/* <div style={{ height: '200px', position: 'relative', overflow: 'hidden'}}>
       <LogoLoop
         logos={techLogos}
         speed={120}
@@ -97,9 +98,9 @@ export default function App() {
         fadeOutColor="#ffffff"
         ariaLabel="Technology partners"
       />
-    </div>
+    </div> */}
         {/* tools section  */}
-
+        <Tools/>
         <Contact />
       </main>
 

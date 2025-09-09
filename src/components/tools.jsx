@@ -1,289 +1,187 @@
-import { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
-import '../styles/tools.css';
+// src/components/Tools.jsx
+import React, { useEffect, useRef, useState } from "react";
+import "../styles/tools.css";
 
-const ANIMATION_CONFIG = {
-  SMOOTH_TAU: 0.25,
-  MIN_COPIES: 2,
-  COPY_HEADROOM: 2
-};
+/** Your icons */
+const ICONS = [
+  { src: "/Images/tools/nodejs.svg", name: "Node.js" },
+  { src: "/Images/tools/express.svg", name: "Express" },
+  { src: "/Images/tools/flutter.svg", name: "Flutter" },
+  { src: "/Images/tools/git.svg", name: "Git" },
+  { src: "/Images/tools/mongodb.png", name: "MongoDB" },
+  { src: "/Images/tools/react.svg", name: "React" },
+  { src: "/Images/tools/tailwind.svg", name: "Tailwind" },
+  { src: "/Images/tools/vite.svg", name: "Vite" },
+  { src: "/Images/tools/blender.svg", name: "Blender" },
+  { src: "/Images/tools/excel.svg", name: "excel" },
+  { src: "/Images/tools/python.svg", name: "python" },
+  { src: "/Images/tools/figma.svg", name: "Figma" },
+  { src: "/Images/tools/javascript.svg", name: "JavaScript" },
+  { src: "/Images/tools/photoshop.svg", name: "Photoshop" },
+  { src: "/Images/tools/sql.png", name: "SQL" },
+  { src: "/Images/tools/html.png", name: "HTML5" },
+  { src: "/Images/tools/django.png", name: "Django" },
+  { src: "/Images/tools/powerBi.svg", name: "PowerBi" },
+  { src: "/Images/tools/Aiml.png", name: "machine learning" },
+  { src: "/Images/tools/dart.svg", name: "dart" },
 
-const toCssLength = value => (typeof value === 'number' ? `${value}px` : (value ?? undefined));
+];
 
-const useResizeObserver = (callback, elements, dependencies) => {
-  useEffect(() => {
-    if (!window.ResizeObserver) {
-      const handleResize = () => callback();
-      window.addEventListener('resize', handleResize);
-      callback();
-      return () => window.removeEventListener('resize', handleResize);
-    }
+export default function Tools() {
+  const containerRef = useRef(null);
+  const trackRef = useRef(null);
+  const iconRefs = useRef([]);
 
-    const observers = elements.map(ref => {
-      if (!ref.current) return null;
-      const observer = new ResizeObserver(callback);
-      observer.observe(ref.current);
-      return observer;
-    });
+  // movement
+  const [offset, setOffset] = useState(0);   // px (negative = left)
+  const [rowWidth, setRowWidth] = useState(0);
 
-    callback();
-
-    return () => {
-      observers.forEach(observer => observer?.disconnect());
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, dependencies);
-};
-
-const useImageLoader = (seqRef, onLoad, dependencies) => {
-  useEffect(() => {
-    const images = seqRef.current?.querySelectorAll('img') ?? [];
-
-    if (images.length === 0) {
-      onLoad();
-      return;
-    }
-
-    let remainingImages = images.length;
-    const handleImageLoad = () => {
-      remainingImages -= 1;
-      if (remainingImages === 0) {
-        onLoad();
-      }
-    };
-
-    images.forEach(img => {
-      const htmlImg = img;
-      if (htmlImg.complete) {
-        handleImageLoad();
-      } else {
-        htmlImg.addEventListener('load', handleImageLoad, { once: true });
-        htmlImg.addEventListener('error', handleImageLoad, { once: true });
-      }
-    });
-
-    return () => {
-      images.forEach(img => {
-        img.removeEventListener('load', handleImageLoad);
-        img.removeEventListener('error', handleImageLoad);
-      });
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, dependencies);
-};
-
-const useAnimationLoop = (trackRef, targetVelocity, seqWidth, isHovered, pauseOnHover) => {
-  const rafRef = useRef(null);
-  const lastTimestampRef = useRef(null);
+  // live refs to avoid stale closures
   const offsetRef = useRef(0);
-  const velocityRef = useRef(0);
+  offsetRef.current = offset;
 
+  // config
+  const SPEED_PX_PER_SEC = 110;   // marquee speed
+  const CENTER_THRESHOLD_PX = 36; // pop sensitivity
+  const POP_DURATION_MS = 300;    // pop hold
+  const HYSTERESIS_PX = 80;       // min travel between pops
+
+  // [row, row] for seamless loop
+  const row = [...ICONS, ...ICONS];
+
+  // width helper: include margins
+  const fullWidthWithMargins = (el) => {
+    const w = el.getBoundingClientRect().width;
+    const cs = window.getComputedStyle(el);
+    const ml = parseFloat(cs.marginLeft) || 0;
+    const mr = parseFloat(cs.marginRight) || 0;
+    return w + ml + mr;
+  };
+
+  // measure row width after mount, resize, and image loads
   useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-
-    if (seqWidth > 0) {
-      offsetRef.current = ((offsetRef.current % seqWidth) + seqWidth) % seqWidth;
-      track.style.transform = `translate3d(${-offsetRef.current}px, 0, 0)`;
-    }
-
-    const animate = timestamp => {
-      if (lastTimestampRef.current === null) {
-        lastTimestampRef.current = timestamp;
-      }
-
-      const deltaTime = Math.max(0, timestamp - lastTimestampRef.current) / 1000;
-      lastTimestampRef.current = timestamp;
-
-      const target = pauseOnHover && isHovered ? 0 : targetVelocity;
-
-      const easingFactor = 1 - Math.exp(-deltaTime / ANIMATION_CONFIG.SMOOTH_TAU);
-      velocityRef.current += (target - velocityRef.current) * easingFactor;
-
-      if (seqWidth > 0) {
-        let nextOffset = offsetRef.current + velocityRef.current * deltaTime;
-        nextOffset = ((nextOffset % seqWidth) + seqWidth) % seqWidth;
-        offsetRef.current = nextOffset;
-
-        const translateX = -offsetRef.current;
-        track.style.transform = `translate3d(${translateX}px, 0, 0)`;
-      }
-
-      rafRef.current = requestAnimationFrame(animate);
+    const measure = () => {
+      if (!trackRef.current) return;
+      const kids = Array.from(trackRef.current.children).slice(0, ICONS.length);
+      const w = kids.reduce((acc, el) => acc + fullWidthWithMargins(el), 0);
+      setRowWidth(w);
     };
 
-    rafRef.current = requestAnimationFrame(animate);
+    // initial + next tick (after layout)
+    measure();
+    requestAnimationFrame(measure);
+
+    // observe size changes
+    const ro = new ResizeObserver(measure);
+    if (trackRef.current) ro.observe(trackRef.current);
+
+    // re-measure when any icon image finishes loading
+    const imgs = trackRef.current?.querySelectorAll("img") || [];
+    imgs.forEach((img) => {
+      if (img.complete) return;
+      img.addEventListener("load", measure, { once: true });
+      img.addEventListener("error", measure, { once: true });
+    });
 
     return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-      lastTimestampRef.current = null;
+      ro.disconnect();
     };
-  }, [targetVelocity, seqWidth, isHovered, pauseOnHover, trackRef]);
-};
+  }, []);
 
-export const LogoLoop = memo(
-  ({
-    logos,
-    speed = 120,
-    direction = 'left',
-    width = '100%',
-    logoHeight = 28,
-    gap = 32,
-    pauseOnHover = true,
-    fadeOut = false,
-    fadeOutColor,
-    scaleOnHover = false,
-    ariaLabel = 'Partner logos',
-    className,
-    style
-  }) => {
-    const containerRef = useRef(null);
-    const trackRef = useRef(null);
-    const seqRef = useRef(null);
+  useEffect(() => {
+    let raf = 0;
+    let last = performance.now();
 
-    const [seqWidth, setSeqWidth] = useState(0);
-    const [copyCount, setCopyCount] = useState(ANIMATION_CONFIG.MIN_COPIES);
-    const [isHovered, setIsHovered] = useState(false);
+    let lastPoppedIdx = -1;
+    let lastPopOffset = 0;
 
-    const targetVelocity = useMemo(() => {
-      const magnitude = Math.abs(speed);
-      const directionMultiplier = direction === 'left' ? 1 : -1;
-      const speedMultiplier = speed < 0 ? -1 : 1;
-      return magnitude * directionMultiplier * speedMultiplier;
-    }, [speed, direction]);
+    const distanceMovedSincePop = () => {
+      const curr = offsetRef.current; // negative or 0
+      if (!rowWidth) return 0;
+      // Convert to positive distance on the loop
+      const currPos = (rowWidth + (curr % rowWidth)) % rowWidth; // 0..rowWidth
+      const lastPos = (rowWidth + (lastPopOffset % rowWidth)) % rowWidth;
+      if (currPos >= lastPos) return currPos - lastPos;
+      return (rowWidth - lastPos) + currPos;
+    };
 
-    const updateDimensions = useCallback(() => {
-      const containerWidth = containerRef.current?.clientWidth ?? 0;
-      const sequenceWidth = seqRef.current?.getBoundingClientRect?.()?.width ?? 0;
+    const step = (now) => {
+      const dt = (now - last) / 1000;
+      last = now;
 
-      if (sequenceWidth > 0) {
-        setSeqWidth(Math.ceil(sequenceWidth));
-        const copiesNeeded = Math.ceil(containerWidth / sequenceWidth) + ANIMATION_CONFIG.COPY_HEADROOM;
-        setCopyCount(Math.max(ANIMATION_CONFIG.MIN_COPIES, copiesNeeded));
+      if (rowWidth > 0) {
+        // move LEFT (negative), wrap at -rowWidth -> add rowWidth
+        setOffset((prev) => {
+          let next = prev - SPEED_PX_PER_SEC * dt;
+          if (next <= -rowWidth) next += rowWidth;
+          return next;
+        });
+
+        // center detection (no pausing)
+        const container = containerRef.current;
+        if (container && trackRef.current) {
+          const cRect = container.getBoundingClientRect();
+          const centerX = cRect.left + cRect.width / 2;
+
+          let nearest = { idx: -1, dist: Infinity, el: null };
+          iconRefs.current.forEach((el, idx) => {
+            if (!el) return;
+            const r = el.getBoundingClientRect();
+            const iconCenter = r.left + r.width / 2;
+            const d = Math.abs(iconCenter - centerX);
+            if (d < nearest.dist) nearest = { idx, dist: d, el };
+          });
+
+          if (
+            nearest.idx !== -1 &&
+            nearest.dist < CENTER_THRESHOLD_PX &&
+            nearest.idx !== lastPoppedIdx &&
+            distanceMovedSincePop() > HYSTERESIS_PX
+          ) {
+            nearest.el.classList.add("toolIcon--pop");
+            lastPoppedIdx = nearest.idx;
+            lastPopOffset = offsetRef.current;
+            setTimeout(() => {
+              nearest.el && nearest.el.classList.remove("toolIcon--pop");
+            }, POP_DURATION_MS);
+          }
+        }
       }
-    }, []);
 
-    useResizeObserver(updateDimensions, [containerRef, seqRef], [logos, gap, logoHeight]);
+      raf = requestAnimationFrame(step);
+    };
 
-    useImageLoader(seqRef, updateDimensions, [logos, gap, logoHeight]);
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [rowWidth]);
 
-    useAnimationLoop(trackRef, targetVelocity, seqWidth, isHovered, pauseOnHover);
+  return (
+    <section id="tools" className="tools reveal">
+      <h2 className="tools__title">Tools We Use</h2>
 
-    const cssVariables = useMemo(
-      () => ({
-        '--logoloop-gap': `${gap}px`,
-        '--logoloop-logoHeight': `${logoHeight}px`,
-        ...(fadeOutColor && { '--logoloop-fadeColor': fadeOutColor })
-      }),
-      [gap, logoHeight, fadeOutColor]
-    );
-
-    const rootClassName = useMemo(
-      () =>
-        ['logoloop', fadeOut && 'logoloop--fade', scaleOnHover && 'logoloop--scale-hover', className]
-          .filter(Boolean)
-          .join(' '),
-      [fadeOut, scaleOnHover, className]
-    );
-
-    const handleMouseEnter = useCallback(() => {
-      if (pauseOnHover) setIsHovered(true);
-    }, [pauseOnHover]);
-
-    const handleMouseLeave = useCallback(() => {
-      if (pauseOnHover) setIsHovered(false);
-    }, [pauseOnHover]);
-
-    const renderLogoItem = useCallback((item, key) => {
-      const isNodeItem = 'node' in item;
-
-      const content = isNodeItem ? (
-        <span className="logoloop__node" aria-hidden={!!item.href && !item.ariaLabel}>
-          {item.node}
-        </span>
-      ) : (
-        <img
-          src={item.src}
-          srcSet={item.srcSet}
-          sizes={item.sizes}
-          width={item.width}
-          height={item.height}
-          alt={item.alt ?? ''}
-          title={item.title}
-          loading="lazy"
-          decoding="async"
-          draggable={false}
-        />
-      );
-
-      const itemAriaLabel = isNodeItem ? (item.ariaLabel ?? item.title) : (item.alt ?? item.title);
-
-      const itemContent = item.href ? (
-        <a
-          className="logoloop__link"
-          href={item.href}
-          aria-label={itemAriaLabel || 'logo link'}
-          target="_blank"
-          rel="noreferrer noopener"
+      <div className="tools-viewport" ref={containerRef}>
+        <div
+          ref={trackRef}
+          className="tools-track"
+          style={{ transform: `translateX(${offset}px)` }} // offset will be ≤ 0
         >
-          {content}
-        </a>
-      ) : (
-        content
-      );
-
-      return (
-        <li className="logoloop__item" key={key} role="listitem">
-          {itemContent}
-        </li>
-      );
-    }, []);
-
-    const logoLists = useMemo(
-      () =>
-        Array.from({ length: copyCount }, (_, copyIndex) => (
-          <ul
-            className="logoloop__list"
-            key={`copy-${copyIndex}`}
-            role="list"
-            aria-hidden={copyIndex > 0}
-            ref={copyIndex === 0 ? seqRef : undefined}
-          >
-            {logos.map((item, itemIndex) => renderLogoItem(item, `${copyIndex}-${itemIndex}`))}
-          </ul>
-        )),
-      [copyCount, logos, renderLogoItem]
-    );
-
-    const containerStyle = useMemo(
-      () => ({
-        width: toCssLength(width) ?? '100%',
-        ...cssVariables,
-        ...style
-      }),
-      [width, cssVariables, style]
-    );
-
-    return (
-      <div
-        ref={containerRef}
-        className={rootClassName}
-        style={containerStyle}
-        role="region"
-        aria-label={ariaLabel}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="logoloop__track" ref={trackRef}>
-          {logoLists}
+          {row.map((t, i) => {
+            const label = t.name ?? t.src.split("/").pop()?.split(".")[0] ?? "tool";
+            return (
+              <div
+                key={`${label}-${i}`}
+                ref={(el) => (iconRefs.current[i] = el)}
+                className="toolIcon"
+                title={label}
+                aria-label={label}
+              >
+                <img src={t.src} alt={label} />
+                <span>{label}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
-    );
-  }
-);
-
-LogoLoop.displayName = 'LogoLoop';
-
-export default LogoLoop;
+    </section>
+  );
+}

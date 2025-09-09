@@ -37,10 +37,11 @@ export default function Hero() {
 
           <div className="microcard">
             <p>
-              <strong>lorem 400</strong> —
-              which areas on a page will hold advertisements, editorials, and
-              filler before the final written content and website designs receive
-              client approval.
+              This is more than just a portfolio — it’s our playground of innovation.
+              At <strong>Senevon</strong>, we merge creativity with technology to build sleek,
+              immersive digital experiences. Every section you explore is designed to
+              feel alive — glowing auras, flowing gradients, interactive 3D elements,
+              and storytelling visuals that reflect the heart of our work.
             </p>
           </div>
         </div>
@@ -102,18 +103,18 @@ export default function Hero() {
       </div>
 
       <div className="about-para reveal">
-        <h4>About Our Team</h4>
+        <h4>About Our Goal</h4>
         <p>
-          client approval. Fun Lorem Ipsum text may appear in any size and font
-          to simulate everything you create for your campaigns.
+          Scroll, explore, and let your curiosity guide you — our portfolio is
+          a living story, and you’re part of it.
         </p>
-        <h2 className="loremTitle">lorem 400</h2>
+        <h2 className="loremTitle">SENEVON</h2>
         <p className="loremLead">
-          nguish which areas on a page will hold advertisements, editorials, and
-          filler before the final written content and website designs receive
-          client approval. <br />
-          Fun Lorem Ipsum text may appear in any size and font to simulate
-          everything you create for your campaigns.
+          Here, you’ll discover projects we’ve nurtured from spark to launch:
+          futuristic UI concepts, dynamic web apps, immersive 3D environments,
+          and solutions tailored for brands that dare to stand out.
+          This space isn’t just about what we’ve built — it’s about the vision
+          of what’s possible when design and development move as one.
         </p>
       </div>
     </section>
