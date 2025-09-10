@@ -41,10 +41,10 @@ export default function Tools() {
   offsetRef.current = offset;
 
   // config
-  const SPEED_PX_PER_SEC = 110;   // marquee speed
-  const CENTER_THRESHOLD_PX = 36; // pop sensitivity
-  const POP_DURATION_MS = 300;    // pop hold
-  const HYSTERESIS_PX = 80;       // min travel between pops
+  const SPEED_PX_PER_SEC = 110;   // marquee speed,   default(110)
+  const CENTER_THRESHOLD_PX = 1136; // pop sensitivity,   default(36)
+  const POP_DURATION_MS = 1000;    // pop hold,   default(300)
+  const HYSTERESIS_PX = 800;       // min travel between pops, def(80)
 
   // [row, row] for seamless loop
   const row = [...ICONS, ...ICONS];

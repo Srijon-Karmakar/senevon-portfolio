@@ -74,6 +74,15 @@
 
 /* Auto-pop effect when at center */
 .toolIcon--pop {
-  transform: translateY(-6px) scale(1.22);
-  filter: drop-shadow(0 0 22px rgba(90,150,255,0.55));
+  transform: translateY(-6px) scale(1.32);
+  filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.345));
 }
+
+
+
+
+
+
+
+
+
