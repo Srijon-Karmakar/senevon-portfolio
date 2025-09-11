@@ -1,6 +1,3 @@
-
-
-// src/components/Orb3D.jsx
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -9,18 +6,10 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
-/**
- * Props:
- *  - modelUrl: string (default "/models/metalicOrb8.glb")
- *  - fit: number 0..1, fraction of viewport's smaller dimension to fill (default 0.9)
- *  - sizeMultiplier: number, applied after auto-fit (default 1.25)
- *  - yOffset: number, final vertical offset (default 0.1)
- */
 export default function Orb3D({
-  // modelUrl = "/models/metalicOrb9.glb",
-  modelUrl = "/models/orb3.glb",
+  modelUrl = "/models/metalicOrb9.glb",
   fit = 0.9,
-  sizeMultiplier = .81, //default 1
+  sizeMultiplier = 0.81,
   yOffset = 0.5,
 }) {
   const mountRef = useRef(null);
@@ -28,6 +17,7 @@ export default function Orb3D({
 
   useEffect(() => {
     const mount = mountRef.current;
+    if (!mount) return;
 
     // Scene
     const scene = new THREE.Scene();
@@ -52,8 +42,7 @@ export default function Orb3D({
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
     renderer.physicallyCorrectLights = true;
-
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Lowered for perf
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     Object.assign(renderer.domElement.style, {
       position: "absolute",
@@ -109,8 +98,6 @@ export default function Orb3D({
       modelUrl,
       (gltf) => {
         const model = gltf.scene || gltf.scenes[0];
-
-        // Materials / color spaces
         model.traverse((o) => {
           if (o.isMesh && o.material) {
             const m = o.material;
@@ -190,14 +177,22 @@ export default function Orb3D({
     const ro = new ResizeObserver(onResize);
     ro.observe(mount);
 
-    // Loop
+    // Animation loop (throttled to 30 FPS)
     const clock = new THREE.Clock();
+    let lastTime = 0;
+    const fps = 30;
+    const interval = 1 / fps;
+
     const tick = () => {
       const dt = clock.getDelta();
-      rig.rotation.y += (targetX - rig.rotation.y) * 0.06;
-      rig.rotation.x += (targetY - rig.rotation.x) * 0.06;
-      if (mixer) mixer.update(dt * 0.7);
-      composer.render();
+      lastTime += dt;
+      if (lastTime > interval) {
+        rig.rotation.y += (targetX - rig.rotation.y) * 0.06;
+        rig.rotation.x += (targetY - rig.rotation.x) * 0.06;
+        if (mixer) mixer.update(dt * 0.7);
+        composer.render();
+        lastTime = 0;
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     tick();

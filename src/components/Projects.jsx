@@ -1,34 +1,31 @@
-
-
-
-
-
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { motion, useAnimation } from "framer-motion";
 import "../styles/projects.css";
 
-// Put these images in /public/images/ and update hrefs to your real pages
 const cards = [
   {
-    title: "Project One",
-    body:
-      "Client approval. Fun Lorem Ipsum text may appear in any size and font to simulate everything you create for your campaigns.",
-    image: "/Images/projects/code-editor-ui.png",
+    title: "Online Code Editor",
+    body: "A lightweight, customizable code editor built with modern web technologies.",
+    image: "/Images/projects/only-ss/codeeditor.jpg",
     href: "https://example.com/project-one",
   },
   {
     title: "Project Two",
-    body:
-      "Client approval. Fun Lorem Ipsum text may appear in any size and font to simulate everything you create for your campaigns.",
-    image: "/Images/projects/codemist-ui.png",
+    body: "Client approval. Fun Lorem Ipsum text may appear in any size and font to simulate everything you create for your campaigns.",
+    image: "/Images/projects/only-ss/toolit.jpg",
     href: "https://example.com/project-two",
   },
   {
     title: "Project Three",
-    body:
-      "Client approval. Fun Lorem Ipsum text may appear in any size and font to simulate everything you create for your campaigns.",
-    image: "/Images/tooli-ui.png",
+    body: "Client approval. Fun Lorem Ipsum text may appear in any size and font to simulate everything you create for your campaigns.",
+    image: "/Images/projects/only-ss/codemist.jpg",
     href: "https://example.com/project-three",
+  },
+  {
+    title: "Project Four",
+    body: "Client approval. Fun Lorem Ipsum text may appear in any size and font to simulate everything you create for your campaigns.",
+    image: "/Images/projects/only-ss/tutora.jpg",
+    href: "https://example.com/project-four",
   },
 ];
 
@@ -39,8 +36,8 @@ export default function Projects() {
     controls.start({ opacity: 1, y: 0 });
   }, [controls]);
 
-  // duplicate to create a seamless loop
-  const row = [...cards, ...cards];
+  // Memoize the row to avoid unnecessary recalculation
+  const row = useMemo(() => [...cards, ...cards], []);
 
   return (
     <section id="projects" className="projects reveal">
@@ -53,7 +50,6 @@ export default function Projects() {
         Projects
       </motion.h2>
 
-      {/* Viewport with edge fade */}
       <div className="proj-viewport">
         <motion.div
           className="proj-track"
@@ -75,7 +71,14 @@ export default function Projects() {
                 rel="noreferrer"
                 aria-label={`${c.title} – open project`}
               >
-                <img className="card__img" src={c.image} alt={c.title} />
+                <img
+                  className="card__img"
+                  src={c.image}
+                  alt={c.title}
+                  loading="lazy"
+                  width="400"
+                  height="250"
+                />
                 <div className="card__content">
                   <h4 className="card__title">{c.title}</h4>
                   <p className="card__body">{c.body}</p>

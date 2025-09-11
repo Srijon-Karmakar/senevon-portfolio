@@ -55,7 +55,7 @@ export default function Contact() {
     setToast({ type: "", msg: "" });
     try {
       const data = await submitContact(trimPayload(form));
-      if (!data?.ok) throw new Error(data?.error || "Request failed");
+      if (!data?.ok) throw new Error(data?.error || "Request submitted");
 
       setToast({
         type: "success",
