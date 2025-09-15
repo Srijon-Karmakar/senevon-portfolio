@@ -98,7 +98,13 @@ export default function Hero() {
 
 
 
-          <button className="cta">Work with Us</button>
+          <button className="cta" type="button"
+            onClick={() => {
+              const el = document.getElementById("contact");
+              if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            }}  >Work with Us</button>
         </div>
       </div>
 

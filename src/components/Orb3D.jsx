@@ -8,8 +8,9 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 
 export default function Orb3D({
   modelUrl = "/models/metalicOrb9.glb",
+  // modelUrl = "/models/meteor.glb",
   fit = 0.9,
-  sizeMultiplier = 0.81,
+  sizeMultiplier = 0.61,
   yOffset = 0.5,
 }) {
   const mountRef = useRef(null);
